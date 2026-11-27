@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class Attendance</title>
+<style>
+:root{--n:#0b1f4d;--g:#b8892a;--r:#c62828;--ok:#1b7a3a}
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 "Segoe UI",Arial,sans-serif;background:#f4f1ea;color:#222}
+header{background:var(--n);color:#f3dfa6;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header h1{margin:0;font:700 17px Georgia,serif;flex:1}.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#f3dfa6;color:var(--n)}
+nav{display:flex;gap:4px;padding:8px 12px 0;flex-wrap:wrap}nav button{background:#e6dfcc;color:var(--n);border:0;padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;font:inherit}
+nav button.on{background:#fff;font-weight:700;border-bottom:3px solid var(--g)}
+main{background:#fff;margin:0 12px 12px;padding:14px;border-radius:0 8px 8px 8px;min-height:60vh}
+button,.b{background:var(--n);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font:inherit}button.alt{background:#fff;color:var(--n);border:1px solid var(--n)}
+input,select,textarea{font:inherit;padding:6px;border:1px solid #bbb;border-radius:6px}textarea{width:100%;height:180px;font:12px Consolas,monospace}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.hint{font-size:12px;color:#666}
+.sec{display:none}.sec.on{display:block}
+.st{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.st button{text-align:left;background:#eaf6ee;color:#1b5e20;border:1px solid #9ccfa8;padding:9px}.st button.a{background:#fdeaea;color:var(--r);border-color:#e29a9a;font-weight:700}
+.bn{padding:8px 12px;border-radius:6px;margin:6px 0}.w{background:#eaf6ee}.h{background:#fff1d6}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:560px}.cal div{padding:8px 2px;text-align:center;border-radius:6px;cursor:pointer;font-size:13px;min-height:46px}
+.cal .hd{background:none;cursor:default;font-weight:700;min-height:0}.cw{background:#eaf6ee}.ch{background:#e8e8e8;color:#777}.ov{outline:2px solid var(--g)}.sel{box-shadow:0 0 0 3px var(--n)}.cal small{display:block;font-size:10px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #cfc7b2;padding:4px 6px;text-align:center}th{background:#efe6cc}td.l{text-align:left}
+tr.low td{background:#fdeaea}td.bad{color:var(--r);font-weight:700}
+#ph{display:none;text-align:center;margin-bottom:8px}#ph img{height:70px;vertical-align:middle;margin-right:10px}
+@media print{header,nav,.np,.sec:not(#s-rep){display:none!important}main{margin:0;padding:0}#ph{display:block}@page{size:A4 landscape;margin:10mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<header><h1 id="ttl">Class Attendance</h1><span class="tag" id="mode">Demo mode</span><button class="alt" id="bset">⚙ Settings</button></header>
+<nav class="np"><button data-t="att" class="on">Attendance</button><button data-t="cal">Calendar</button><button data-t="rep">Reports</button><button data-t="stu">Students</button></nav>
+<main>
+<section class="sec on" id="s-att"><div class="row"><b>Date</b><input type="date" id="ad"><span id="cnt" class="hint"></span></div><div id="dinfo"></div>
+<div class="hint">Everyone is Present. Tap a name to mark Absent.</div><div class="st" id="sl"></div>
+<div class="row"><button id="asv">Save attendance</button><button class="alt" id="aall">Clear all absent</button><span id="amsg" class="hint"></span></div></section>
+<section class="sec" id="s-cal"><div class="row"><b>Month</b><input type="month" id="cm"><span class="hint">Green = working, grey = holiday, gold outline = changed by you. Click a day to change it.</span></div>
+<div class="cal" id="cg"></div>
+<div class="row" id="cp" style="display:none"><b id="cd"></b><select id="ct"><option value="">Default (weekly rule)</option><option value="W">Working day</option><option value="H">Holiday</option></select>
+Periods <input type="number" id="cn" min="0" max="12" style="width:64px"> Note <input id="cno" placeholder="e.g. Pongal, Saturday class"><button id="csv">Save day</button></div></section>
+<section class="sec" id="s-rep"><div class="row np"><b>As on</b><input type="date" id="rd"><button id="rp">Print / PDF</button><span class="hint">Week = Mon–Sun containing the date · Month · Cumulative from term start</span></div>
+<div id="ph"><img id="lg" alt=""><b id="pt" style="font-size:20px"></b><div id="ps"></div></div><div id="rsum"></div><div style="overflow:auto"><table id="rt"></table></div></section>
+<section class="sec" id="s-stu"><div class="hint">One student per line: <b>Register No, Roll No, Name, Department, Semester, Parent phone</b> (copy from Excel and paste).</div>
+<textarea id="sti"></textarea><div class="row"><button id="ssv">Save students</button><span id="smsg" class="hint"></span></div></section>
+</main>
+<dialog id="dlg" style="border-radius:10px;border:1px solid #999;max-width:460px"><b>Settings</b>
+<div class="row">College name<input id="s_c" size="34"></div><div class="row">Logo <input type="file" id="s_l" accept="image/*"><span class="hint">stored on this device</span></div>
+<div class="row">Periods per day<input type="number" id="s_p" style="width:60px"> Minimum % <input type="number" id="s_t" style="width:60px"></div>
+<div class="row">Weekly off days (0=Sun … 6=Sat)<input id="s_o" size="8" placeholder="0"></div><div class="row">Term start<input type="date" id="s_s"></div><hr>
+<div class="row">Google Script URL<input id="s_u" size="40" placeholder="https://script.google.com/macros/s/…/exec"></div><div class="row">PIN<input id="s_n" type="password" size="12"></div>
+<div class="hint">Leave URL empty to use Demo mode (data stays only in this browser).</div>
+<div class="row"><button id="s_ok">Save</button><button class="alt" id="s_x">Cancel</button></div></dialog>
+<script>
+const $=i=>document.getElementById(i),E=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const p2=n=>String(n).padStart(2,"0"),F=d=>d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate()),P=s=>{const[a,b,c]=s.split("-");return new Date(+a,+b-1,+c)},TD=()=>F(new Date());
+let CFG=JSON.parse(localStorage.getItem("att_cfg")||"{}"),D={students:[],calendar:{},attendance:{},settings:{}},cur=new Set(),selDay="";
+const DEF={college:"DON BOSCO POLYTECHNIC COLLEGE",periods:8,off:[0],thr:80,start:F(new Date(new Date().getFullYear(),5,1))};
+const S=()=>({...DEF,...D.settings});
+/* ---------- data layer: Google Apps Script (live) or browser storage (demo) ---------- */
+const mockDB=()=>JSON.parse(localStorage.getItem("att_demo")||'{"students":[],"calendar":{},"attendance":{},"settings":{}}');
+function mock(a,d){const db=mockDB();
+ if(a=="saveAttendance")db.attendance[d.date]={taken:1,absent:d.absent};
+ else if(a=="saveCalendar"){if(d.type)db.calendar[d.date]={type:d.type,periods:d.periods,note:d.note};else delete db.calendar[d.date]}
+ else if(a=="saveStudents")db.students=d.rows;else if(a=="saveSettings")db.settings=d.settings;
+ localStorage.setItem("att_demo",JSON.stringify(db));return a=="load"?db:{ok:1}}
+async function api(a,d){if(!CFG.url)return mock(a,d);
+ const r=await fetch(CFG.url,{method:"POST",body:JSON.stringify({token:CFG.pin||"",action:a,data:d})});const j=await r.json();if(j.error)throw new Error(j.error);return j}
+const say=(id,m,bad)=>{$(id).textContent=m;$(id).style.color=bad?"#c62828":"#1b7a3a"};
+async function guard(id,fn){try{say(id,"Saving…");await fn();say(id,"Saved ✔ "+new Date().toLocaleTimeString())}catch(e){say(id,"Error: "+e.message,1)}}
+/* ---------- calendar rules ---------- */
+function eff(d){const o=D.calendar[d],s=S();if(o&&o.type)return o.type=="W"?{w:1,p:+o.periods||+s.periods,o:1,n:o.note}:{w:0,p:0,o:1,n:o.note};
+ return(s.off||[]).includes(P(d).getDay())?{w:0,p:0}:{w:1,p:+s.periods}}
+/* ---------- attendance ---------- */
+function rAtt(){const d=$("ad").value;if(!d)return;const e=eff(d),a=D.attendance[d];cur=new Set(a?a.absent:[]);
+ $("dinfo").innerHTML=e.w?`<div class="bn w">Working day · <b>${e.p} periods</b>${e.n?" · "+E(e.n):""} ${a&&a.taken?'· <b>attendance already saved</b>':""} <button class="alt" id="mh">Mark as holiday</button></div>`
+  :`<div class="bn h"><b>Holiday</b>${e.n?" · "+E(e.n):""} — no attendance counted. <button class="alt" id="mw">Mark as working day</button></div>`;
+ if($("mh"))$("mh").onclick=()=>setDay(d,"H",0);if($("mw"))$("mw").onclick=()=>setDay(d,"W",+S().periods);
+ $("sl").innerHTML=D.students.map(s=>`<button data-r="${E(s.reg)}" class="${cur.has(String(s.reg))?"a":""}">${E(s.roll)}. ${E(s.name)}${cur.has(String(s.reg))?" — ABSENT":""}</button>`).join("")||'<span class="hint">Add students in the Students tab first.</span>';
+ cnt()}
+const cnt=()=>$("cnt").textContent=`${D.students.length-cur.size} present · ${cur.size} absent · ${D.students.length} total`;
+async function setDay(d,t,p){await api("saveCalendar",{date:d,type:t,periods:p,note:""});D.calendar[d]={type:t,periods:p,note:""};rAtt();rCal()}
+$("sl").onclick=e=>{const b=e.target.closest("button");if(!b)return;const r=b.dataset.r;cur.has(r)?cur.delete(r):cur.add(r);b.classList.toggle("a");b.textContent=b.textContent.replace(" — ABSENT","")+(cur.has(r)?" — ABSENT":"");cnt()};
+$("aall").onclick=()=>{cur.clear();rAtt.keep=1;document.querySelectorAll("#sl .a").forEach(b=>{b.classList.remove("a");b.textContent=b.textContent.replace(" — ABSENT","")});cnt()};
+$("asv").onclick=()=>{const d=$("ad").value;if(!eff(d).w)return say("amsg","This is a holiday – mark it as a working day first.",1);
+ guard("amsg",async()=>{await api("saveAttendance",{date:d,absent:[...cur]});D.attendance[d]={taken:1,absent:[...cur]};rAtt()})};
+$("ad").onchange=rAtt;
+/* ---------- calendar ---------- */
+function rCal(){const m=$("cm").value;if(!m)return;const[y,mo]=m.split("-").map(Number),first=new Date(y,mo-1,1),n=new Date(y,mo,0).getDate();
+ let h=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="hd">${x}</div>`).join("")+"<div class='hd'></div>".repeat(first.getDay());
+ for(let i=1;i<=n;i++){const k=m+"-"+p2(i),e=eff(k);h+=`<div data-d="${k}" class="${e.w?"cw":"ch"} ${e.o?"ov":""} ${k==selDay?"sel":""}">${i}<small>${e.w?e.p+" p":"off"}</small></div>`}$("cg").innerHTML=h}
+$("cg").onclick=e=>{const c=e.target.closest("[data-d]");if(!c)return;selDay=c.dataset.d;const o=D.calendar[selDay]||{};$("cp").style.display="flex";$("cd").textContent=selDay;
+ $("ct").value=o.type||"";$("cn").value=o.periods||S().periods;$("cno").value=o.note||"";rCal()};
+$("csv").onclick=()=>{const t=$("ct").value,o={date:selDay,type:t,periods:+$("cn").value||0,note:$("cno").value};
+ api("saveCalendar",o).then(()=>{t?D.calendar[selDay]={type:t,periods:o.periods,note:o.note}:delete D.calendar[selDay];rCal();rAtt()}).catch(x=>alert(x.message))};
+$("cm").onchange=rCal;
+/* ---------- reports ---------- */
+function calc(from,to){const t=TD(),end=to>t?t:to,R={},miss=[];D.students.forEach(s=>R[s.reg]={s,tot:0,ab:0});
+ for(let d=P(from);F(d)<=end;d.setDate(d.getDate()+1)){const k=F(d),e=eff(k);if(!e.w)continue;const a=D.attendance[k];if(!a||!a.taken){miss.push(k);continue}
+  for(const r in R)R[r].tot+=e.p;(a.absent||[]).forEach(r=>{if(R[r])R[r].ab+=e.p})}return{R,miss}}
+function rRep(){const a=$("rd").value;if(!a)return;const s=S(),dt=P(a),mon=new Date(dt);mon.setDate(dt.getDate()-((dt.getDay()+6)%7));const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+ const W=calc(F(mon),F(sun)),M=calc(a.slice(0,8)+"01",F(new Date(dt.getFullYear(),dt.getMonth()+1,0))),C=calc(s.start,a),thr=+s.thr;
+ const cell=(x,r)=>{const o=x.R[r],pr=o.tot-o.ab,pc=o.tot?pr/o.tot*100:null;return{t:`${pr}/${o.tot}`,p:pc==null?"–":pc.toFixed(1)+"%",low:pc!=null&&pc<thr}};
+ let low=0,sum=0,cn=0,h=`<tr><th rowspan=2>Roll</th><th rowspan=2>Name</th><th colspan=2>Week</th><th colspan=2>Month</th><th colspan=2>Cumulative (since ${s.start})</th><th rowspan=2>Status / action</th></tr><tr><th>Present/Total</th><th>%</th><th>Present/Total</th><th>%</th><th>Present/Total</th><th>%</th></tr>`;
+ D.students.slice().sort((x,y)=>String(x.roll).localeCompare(String(y.roll),undefined,{numeric:1})).forEach(st=>{const w=cell(W,st.reg),m=cell(M,st.reg),c=cell(C,st.reg),o=C.R[st.reg],pr=o.tot-o.ab;
+  let note="";if(c.low){low++;note=`Below ${thr}% — needs ${Math.ceil(+((thr/100*o.tot-pr)/(1-thr/100)).toFixed(6))} periods of full attendance`}else if(o.tot){note=`OK — can miss ${Math.max(0,Math.floor(+(pr/(thr/100)-o.tot).toFixed(6)))} more periods`}
+  if(o.tot){sum+=pr/o.tot*100;cn++}
+  h+=`<tr class="${c.low?"low":""}"><td>${E(st.roll)}</td><td class="l">${E(st.name)}</td><td>${w.t}</td><td class="${w.low?"bad":""}">${w.p}</td><td>${m.t}</td><td class="${m.low?"bad":""}">${m.p}</td><td>${c.t}</td><td class="${c.low?"bad":""}"><b>${c.p}</b></td><td class="l">${note}</td></tr>`});
+ $("rt").innerHTML=h;const ms=C.miss.length;
+ $("rsum").innerHTML=`<p><b>${cn?(sum/cn).toFixed(1):0}%</b> class average (cumulative) · <b style="color:#c62828">${low}</b> student(s) below ${thr}%${ms?` · <span style="color:#c62828">⚠ ${ms} working day(s) have no attendance saved yet (${C.miss.slice(-3).join(", ")}${ms>3?"…":""})</span>`:""}</p>`;
+ $("pt").textContent=s.college;$("ps").textContent=`Attendance report as on ${a} · Minimum ${thr}% · ${s.periods} periods/day`;const lg=localStorage.getItem("att_logo");if(lg){$("lg").src=lg;$("lg").style.display=""}else $("lg").style.display="none"}
+$("rd").onchange=rRep;$("rp").onclick=()=>{rRep();window.print()};
+/* ---------- students ---------- */
+const stuText=()=>D.students.map(s=>[s.reg,s.roll,s.name,s.dept,s.sem,s.phone].join(", ")).join("\n");
+$("ssv").onclick=()=>{const rows=$("sti").value.split(/\r?\n/).map(l=>l.split(/\t|,/).map(x=>x.trim())).filter(c=>c[0]&&!/^reg/i.test(c[0])).map(c=>({reg:c[0],roll:c[1]||"",name:c[2]||"",dept:c[3]||"",sem:c[4]||"",phone:c[5]||""}));
+ guard("smsg",async()=>{await api("saveStudents",{rows});D.students=rows;rAtt()})};
+/* ---------- settings / tabs / start ---------- */
+document.querySelector("nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x==b));
+ document.querySelectorAll(".sec").forEach(x=>x.classList.toggle("on",x.id=="s-"+b.dataset.t));if(b.dataset.t=="cal")rCal();if(b.dataset.t=="rep")rRep();if(b.dataset.t=="stu")$("sti").value=stuText()};
+$("bset").onclick=()=>{const s=S();$("s_c").value=s.college;$("s_p").value=s.periods;$("s_t").value=s.thr;$("s_o").value=(s.off||[]).join(",");$("s_s").value=s.start;$("s_u").value=CFG.url||"";$("s_n").value=CFG.pin||"";$("dlg").showModal()};
+$("s_x").onclick=()=>$("dlg").close();
+$("s_l").onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=()=>localStorage.setItem("att_logo",r.result);r.readAsDataURL(f)}};
+$("s_ok").onclick=async()=>{const old=CFG.url;CFG={url:$("s_u").value.trim(),pin:$("s_n").value};localStorage.setItem("att_cfg",JSON.stringify(CFG));
+ const set={college:$("s_c").value,periods:+$("s_p").value||8,thr:+$("s_t").value||80,off:$("s_o").value.split(",").map(x=>x.trim()).filter(x=>x!=="").map(Number),start:$("s_s").value};
+ try{if(CFG.url==(old||"")){await api("saveSettings",{settings:set});D.settings=set}else{await boot();if(!Object.keys(D.settings).length){await api("saveSettings",{settings:set});D.settings=set}}}catch(x){alert("Could not save: "+x.message)}
+ $("dlg").close();paint()};
+function paint(){$("ttl").textContent=S().college+" · Attendance";$("mode").textContent=CFG.url?"Live · Google Sheet":"Demo mode";rAtt();rCal();rRep()}
+async function boot(){try{D=await api("load");}catch(e){alert("Could not load data: "+e.message+"\nCheck the Script URL, PIN and deployment access in Settings.")}}
+(async()=>{$("ad").value=TD();$("cm").value=TD().slice(0,7);$("rd").value=TD();await boot();paint()})();
+</script></body></html>
